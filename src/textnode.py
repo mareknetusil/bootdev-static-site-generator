@@ -1,7 +1,9 @@
 import dataclasses as dc
 from enum import StrEnum, auto
 
+
 class TextType(StrEnum):
+    TEXT = auto()
     BOLD = auto()
     ITALIC = auto()
     CODE = auto()
@@ -17,4 +19,3 @@ class TextNode:
 
     def __repr__(self) -> str:
         return f"TextNode({self.text}, {self.text_type}, {self.url})"
-

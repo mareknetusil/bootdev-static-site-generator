@@ -32,7 +32,7 @@ def text_node_to_html_node(text_node: TextNode) -> LeafNode:
             return LeafNode(
                 tag="img",
                 value=None,
-                props={"href": text_node.url, "alt": text_node.text},
+                props={"src": text_node.url, "alt": text_node.text},
             )
 
     raise TypeError("unknown text node!")
@@ -65,16 +65,13 @@ def paragraph_to_node(block: str) -> ParentNode:
 
 
 def quote_to_node(block: str) -> ParentNode:
-    block = "\n".join(line.replace(">", "") for line in block.split("\n"))
+    block = "\n".join(line.replace(">", "").strip() for line in block.split("\n"))
     return text_block_to_html_node(block, BlockType.QUOTE)
 
 
 def code_to_node(block: str) -> HTMLNode:
     block = block.replace("```\n", "").replace("```", "")
-    return ParentNode(
-        "pre",
-        [LeafNode("code", block)]
-    )
+    return ParentNode("pre", [LeafNode("code", block)])
 
 
 def heading_to_node(block: str) -> ParentNode:
@@ -85,16 +82,26 @@ def heading_to_node(block: str) -> ParentNode:
 
 def unordered_list_to_node(block: str) -> ParentNode:
     lines = (line[2:] for line in block.split("\n"))
-    list_elems = [LeafNode("li", line) for line in lines]
+    transformed_lines = (text_to_textnodes(line) for line in lines)
+    all_children = (
+        (text_node_to_html_node(node) for node in line_nodes)
+        for line_nodes in transformed_lines
+    )
+    list_elems = [ParentNode("li", children) for children in all_children]
     return ParentNode("ul", list_elems)
 
 
 def ordered_list_to_node(block: str) -> ParentNode:
     lines = (
-        line.replace(f"{n}.", "", count=1)
+        line.replace(f"{n}.", "", count=1).strip()
         for n, line in enumerate(block.split("\n"), start=1)
     )
-    list_elems = [LeafNode("li", line) for line in lines]
+    transformed_lines = (text_to_textnodes(line) for line in lines)
+    all_children = (
+        (text_node_to_html_node(node) for node in line_nodes)
+        for line_nodes in transformed_lines
+    )
+    list_elems = [ParentNode("li", children) for children in all_children]
     return ParentNode("ol", list_elems)
 
 

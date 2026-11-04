@@ -21,11 +21,14 @@ def main():
         basepath = sys.argv[1]
     except IndexError:
         basepath = "/"
-    copy_directory(pl.Path("static"), pl.Path("public"))
+    docs = pl.Path("docs")
+    docs.mkdir(exist_ok=True)
+    copy_directory(pl.Path("static"), docs)
     generate_page_recursively(
         pl.Path("content"),
         pl.Path("template.html"),
-        pl.Path("public"),
+        docs,
+        basepath
     )
 
 
